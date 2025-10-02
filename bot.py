@@ -1,5 +1,6 @@
 import os
 import logging
+import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
@@ -10,16 +11,21 @@ logging.basicConfig(
 )
 
 # ✅ ПРАВИЛЬНОЕ ПОЛУЧЕНИЕ ТОКЕНА
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8268375064:AAE7Lujf07p6YiCV1lVrnIB1E8D_mzQOa2Q")
+def get_bot_token():
+    # Пробуем получить из переменных окружения
+    token_from_env = os.environ.get("BOT_TOKEN")
+    
+    if token_from_env and token_from_env.strip() and token_from_env != "8268375064:AAE7Lujf07p6YiCV1lVrnIB1E8D_mzQOa2Q":
+        logging.info("✅ Используется токен из переменных окружения")
+        return token_from_env
+    else:
+        # Используем дефолтный токен
+        logging.warning("⚠️ Используется дефолтный токен. Для продакшена добавьте BOT_TOKEN в переменные окружения!")
+        return "8268375064:AAE7Lujf07p6YiCV1lVrnIB1E8D_mzQOa2Q"
 
-# Проверка токена
-if not BOT_TOKEN or BOT_TOKEN == "8268375064:AAE7Lujf07p6YiCV1lVrnIB1E8D_mzQOa2Q":
-    logging.warning("⚠️ Используется дефолтный токен. Для продакшена добавьте BOT_TOKEN в переменные окружения!")
-
+BOT_TOKEN = get_bot_token()
 CREATOR = "StarField"
 CODER = "dewlops"
-
-# ... остальной ваш код БЕЗ ИЗМЕНЕНИЙ ...
 
 # Хранилище данных
 games = {}
@@ -702,44 +708,39 @@ async def set_commands(application: Application):
     ]
     await application.bot.set_my_commands(commands)
 
-import os
-
 def main():
-    """Основная функция адаптированная для хостинга"""
-    # Получаем токен из переменных окружения Railway
-    BOT_TOKEN = os.environ.get("BOT_TOKEN")
-    
-    if not BOT_TOKEN:
-        logging.error("❌ BOT_TOKEN не найден в переменных окружения!")
-        return
-    
-    application = Application.builder().token(BOT_TOKEN).build()
-    
-    # Обработчики команд
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", start))
-    application.add_handler(CommandHandler("duel", start))
-    
-    # Обработчики callback
-    application.add_handler(CallbackQueryHandler(about_creators, pattern="^about_creators$"))
-    application.add_handler(CallbackQueryHandler(challenge_info, pattern="^challenge_info$"))
-    application.add_handler(CallbackQueryHandler(battle_bot, pattern="^battle_bot$"))
-    application.add_handler(CallbackQueryHandler(stats, pattern="^stats$"))
-    application.add_handler(CallbackQueryHandler(main_menu, pattern="^main_menu$"))
-    application.add_handler(CallbackQueryHandler(handle_challenge_response, pattern="^(accept|decline)_"))
-    application.add_handler(CallbackQueryHandler(handle_game_action, pattern="^(aim|throw|disrupt|pvp_)"))
-    
-    # Обработчик ВСЕХ сообщений для вызовов
-    application.add_handler(MessageHandler(
-        filters.TEXT & ~filters.COMMAND, 
-        handle_all_messages
-    ))
-    
-    print("🚀 Бот запущен на Railway!")
-    print("📝 Для вызова: ответьте на сообщение игрока словом 'Сразить' или 'Дуэль'")
-    
-    # Запускаем бота
-    application.run_polling()
+    """Основная функция"""
+    try:
+        application = Application.builder().token(BOT_TOKEN).build()
+        
+        # Обработчики команд
+        application.add_handler(CommandHandler("start", start))
+        application.add_handler(CommandHandler("help", start))
+        application.add_handler(CommandHandler("duel", start))
+        
+        # Обработчики callback
+        application.add_handler(CallbackQueryHandler(about_creators, pattern="^about_creators$"))
+        application.add_handler(CallbackQueryHandler(challenge_info, pattern="^challenge_info$"))
+        application.add_handler(CallbackQueryHandler(battle_bot, pattern="^battle_bot$"))
+        application.add_handler(CallbackQueryHandler(stats, pattern="^stats$"))
+        application.add_handler(CallbackQueryHandler(main_menu, pattern="^main_menu$"))
+        application.add_handler(CallbackQueryHandler(handle_challenge_response, pattern="^(accept|decline)_"))
+        application.add_handler(CallbackQueryHandler(handle_game_action, pattern="^(aim|throw|disrupt|pvp_)"))
+        
+        # Обработчик сообщений
+        application.add_handler(MessageHandler(
+            filters.TEXT & ~filters.COMMAND, 
+            handle_all_messages
+        ))
+        
+        print("🚀 Бот запущен на Railway!")
+        print("📝 Для вызова: ответьте на сообщение игрока словом 'Сразить' или 'Дуэль'")
+        
+        # Запускаем бота
+        application.run_polling()
+        
+    except Exception as e:
+        logging.error(f"❌ Ошибка запуска бота: {e}")
 
 if __name__ == "__main__":
     main()
