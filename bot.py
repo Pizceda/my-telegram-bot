@@ -1,4 +1,4 @@
-import random
+import os
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
@@ -9,10 +9,17 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# Конфигурация
-BOT_TOKEN = "8268375064:AAE7Lujf07p6YiCV1lVrnIB1E8D_mzQOa2Q"
+# ✅ ПРАВИЛЬНОЕ ПОЛУЧЕНИЕ ТОКЕНА
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8268375064:AAE7Lujf07p6YiCV1lVrnIB1E8D_mzQOa2Q")
+
+# Проверка токена
+if not BOT_TOKEN or BOT_TOKEN == "8268375064:AAE7Lujf07p6YiCV1lVrnIB1E8D_mzQOa2Q":
+    logging.warning("⚠️ Используется дефолтный токен. Для продакшена добавьте BOT_TOKEN в переменные окружения!")
+
 CREATOR = "StarField"
 CODER = "dewlops"
+
+# ... остальной ваш код БЕЗ ИЗМЕНЕНИЙ ...
 
 # Хранилище данных
 games = {}
